@@ -1,0 +1,76 @@
+{
+  "name": "cs-nest-redis",
+  "version": "1.0.0",
+  "description": "NestJS Redis Module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CodeSnooker/cs-nest-redis.git"
+  },
+  "main": "dist/index",
+  "types": "dist/index",
+  "keywords": [
+    "NestJS",
+    "Redis",
+    "library"
+  ],
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "build": "rimraf dist && tsc",
+    "prepublishOnly": "npm test && npm run lint",
+    "prepublish": "npm run build",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "author": "Paras Mendiratta <code.snooker@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@nestjs/common": "7.0.13",
+    "@nestjs/core": "7.0.13",
+    "@nestjs/schematics": "7.0.0",
+    "redis": "3.0.2",
+    "reflect-metadata": "0.1.13",
+    "rxjs": "6.5.5"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "7.0.13",
+    "@types/jest": "25.2.3",
+    "@types/node": "14.0.5",
+    "@types/redis": "2.8.21",
+    "@types/supertest": "2.0.9",
+    "jest": "26.0.1",
+    "prettier": "2.0.5",
+    "rimraf": "3.0.2",
+    "supertest": "4.0.2",
+    "ts-jest": "26.0.0",
+    "ts-loader": "7.0.4",
+    "ts-node": "8.10.1",
+    "tsconfig-paths": "3.9.0",
+    "tslint": "6.1.2",
+    "tslint-config-prettier": "1.18.0",
+    "typescript": "3.9.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
