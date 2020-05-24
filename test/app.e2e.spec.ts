@@ -15,4 +15,10 @@ describe('RedisModule (e2e)', () => {
   it('repository should be defined', () => {
     expect(repository).toBeDefined();
   });
+
+  it('disconnect the client', async () => {
+    expect(async () => {
+      await repository.disconnect();
+    }).not.toThrow();
+  });
 });
