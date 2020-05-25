@@ -1,6 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisClient } from 'redis';
 
+enum DataType {
+  string = 'string',
+  number = 'number',
+  Date = 'Date',
+  bigint = 'bigint',
+  boolean = 'boolean',
+  symbol = 'symbol',
+  undefined = 'undefined',
+  object = 'object',
+  'function' = 'function',
+}
+
 @Injectable()
 export class RedisRepository {
   constructor(
@@ -18,6 +30,19 @@ export class RedisRepository {
         }
       });
     });
+  }
+
+  async getObject<T>(key: string): Promise<T> {
+    const data: string = await this.get(key);
+    if (data) {
+      return Promise.resolve(JSON.parse(data));
+    } else {
+      return Promise.resolve(undefined);
+    }
+  }
+
+  storeObject<T>(key: string, value: T) {
+    return this.put(key, JSON.stringify(value));
   }
 
   put(key: string, value: string): Promise<boolean> {
@@ -61,13 +86,25 @@ export class RedisRepository {
     });
   }
 
-  hmgetall(key: string): Promise<{}> {
+  hgetall(key: string): Promise<{}> {
     return new Promise(async (resolve, reject) => {
       this._redisClient.hgetall(key, (a, b) => {
         if (a) {
           return reject(a);
         }
         return resolve(b);
+      });
+    });
+  }
+
+  hdel(key: string, field: string | string[]): Promise<boolean> {
+    return new Promise(async (resolve, reject) => {
+      this._redisClient.hdel(key, field, (a, b) => {
+        if (a) {
+          return resolve(false);
+        } else {
+          return resolve(true);
+        }
       });
     });
   }
