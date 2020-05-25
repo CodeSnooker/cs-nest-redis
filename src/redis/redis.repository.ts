@@ -86,7 +86,24 @@ export class RedisRepository {
     });
   }
 
-  hgetall(key: string): Promise<{}> {
+  hmget(key, fields: string[]): Promise<Record<string, any>> {
+    return new Promise(async (resolve, reject) => {
+      this._redisClient.hmget(key, fields, (a, b) => {
+        if (a) {
+          return reject(a);
+        }
+
+        const record: Record<string, any> = {};
+        fields.forEach((field, index) => {
+          record[field] = b[index];
+        });
+
+        return resolve(record);
+      });
+    });
+  }
+
+  hgetall(key: string): Promise<Record<string, any>> {
     return new Promise(async (resolve, reject) => {
       this._redisClient.hgetall(key, (a, b) => {
         if (a) {

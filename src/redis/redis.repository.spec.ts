@@ -8,6 +8,8 @@ interface TestData {
   name: string;
 }
 
+const TEST_KEY: string = 'lamda';
+
 describe('RedisService', () => {
   let service: RedisRepository;
 
@@ -17,6 +19,10 @@ describe('RedisService', () => {
     }).compile();
 
     service = module.get<RedisRepository>(RedisRepository);
+  });
+
+  beforeEach(async () => {
+    await service.remove(TEST_KEY);
   });
 
   test('should be defined', () => {
@@ -30,8 +36,8 @@ describe('RedisService', () => {
   });
 
   test('get object', async () => {
-    jest.setTimeout(50000);
     const data: TestData = { age: 12, date: new Date('2018-12-30T18:30:00.000+00:00'), name: 'Paras' };
+    await service.storeObject<TestData>('lamda', data);
     const result = await service.getObject<TestData>('lamda');
     expect(result).toBeDefined();
 
@@ -41,17 +47,24 @@ describe('RedisService', () => {
     expect(result.name).toStrictEqual(data.name);
   });
 
+  test('get object - does not exists', async () => {
+    const result = await service.getObject<TestData>('lamda');
+    expect(result).toBeUndefined();
+  });
+
   test('push test', async () => {
     const result = await service.put('lamda', 'surprise');
     expect(result).toBe(true);
   });
 
   test('pull test', async () => {
+    await service.put('lamda', 'surprise');
     const result = await service.get('lamda');
     expect(result).toBe('surprise');
   });
 
   test('key exists', async () => {
+    await service.put('lamda', 'surprise');
     const result = await service.exists('lamda');
     expect(result).toBe(true);
 
@@ -62,6 +75,33 @@ describe('RedisService', () => {
   test('delete key-value', async () => {
     const result = await service.remove('lamda');
     expect(result).toBe(true);
+
+    const keyExisitsAnymore = await service.exists('lamda');
+    expect(keyExisitsAnymore).toBe(false);
+  });
+
+  test('hset', async () => {
+    const result = await service.hset(TEST_KEY, 'ace', 'lace');
+    expect(result).toBeTruthy();
+
+    const data = await service.hget(TEST_KEY, 'ace');
+    expect(data).toStrictEqual('lace');
+
+    const notExistData = await service.hget(TEST_KEY, 'base');
+    expect(notExistData).toBeFalsy();
+  });
+
+  test('hmget', async () => {
+    await service.hmset('lamda', { ace: 'lace', base: 'lbase', case: 'lcase', dice: 'ldice' });
+    const result = await service.hmget('lamda', ['ace', 'case', 'maze']);
+    expect(result).toBeDefined();
+
+    expect(result.ace).toStrictEqual('lace');
+    expect(result.case).toStrictEqual('lcase');
+    expect(result.maze).toBeFalsy();
+
+    const result2 = await service.remove('lamda');
+    expect(result2).toBe(true);
 
     const keyExisitsAnymore = await service.exists('lamda');
     expect(keyExisitsAnymore).toBe(false);
@@ -86,12 +126,6 @@ describe('RedisService', () => {
 
     const baseValue = await service.hget('lamda', 'base');
     expect(baseValue).toBeNull();
-
-    const result2 = await service.remove('lamda');
-    expect(result2).toBe(true);
-
-    const keyExisitsAnymore = await service.exists('lamda');
-    expect(keyExisitsAnymore).toBe(false);
   });
 
   test('delete multiple fields from hset', async () => {
@@ -106,12 +140,6 @@ describe('RedisService', () => {
     expect(baseValue).toBeNull();
     expect(caseValue).toBeNull();
     expect(diceValue).toBeNull();
-
-    const result2 = await service.remove('lamda');
-    expect(result2).toBe(true);
-
-    const keyExisitsAnymore = await service.exists('lamda');
-    expect(keyExisitsAnymore).toBe(false);
   });
 
   test('disconnect server', async () => {
